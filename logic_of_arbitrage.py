@@ -4,7 +4,7 @@
 
 commission_rate = 0.021  # 0.1%
 
-
+comm  = commission_rate - 0.1
 # Рассчитываем возможный арбитражный спред с учетом комиссии
 def calculate_arbitrage(binance_price, kraken_price):
     buy_price = min(binance_price, kraken_price)
@@ -22,6 +22,6 @@ def calculate_arbitrage(binance_price, kraken_price):
     else:
         print("Арбитраж Nевозможен")
 
-
+print(comm)
 # Пример расчета
 calculate_arbitrage(binance_price, kraken_price)
