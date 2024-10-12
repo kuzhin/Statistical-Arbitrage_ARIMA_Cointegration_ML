@@ -37,7 +37,7 @@ def get_bybit_order_book(cex_api_url, symbol):
     if response.status_code == 200:
         return response.json()
     else:
-        raise Exception("Error fetching order book")
+        raise Exception("order bookr")
 
 # Пример использования
 order_book = get_bybit_order_book('https://api.bybit.com', 'BTCUSDT')
