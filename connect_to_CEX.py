@@ -1,6 +1,6 @@
 from os import close
-
 import ccxt
+import requests
 
 # Инициализация бирж
 bybit = ccxt.bybit()
@@ -24,3 +24,21 @@ Price BTC/USDT = {'symbol': 'BTC/USDT', 'timestamp': None, 'datetime': None, 'hi
 print(bybit_ticker['close'])
 
 # print('Price BTC/USDT = {0}'.format(str(bybit_ticker)))
+
+def get_bybit_order_book(cex_api_url, symbol):
+    """
+    Получение данных о ценах, объемах, ликвидности, комиссиях для Bybit
+
+    :param cex_api_url: URL API Bybit
+    :param symbol: Пара для получения ордеров, например 'BTCUSDT'
+    :return: Данные ордербука в формате JSON
+    """
+    response = requests.get(f"{cex_api_url}/v2/public/orderBook/L2?symbol={symbol}")
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception("Error fetching order book")
+
+# Пример использования
+order_book = get_bybit_order_book('https://api.bybit.com', 'BTCUSDT')
+print(order_book)
