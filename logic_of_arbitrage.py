@@ -2,7 +2,7 @@
 
 
 
-commission_rate = 0.001  # 0.1%
+commission_rate = 0.021  # 0.1%
 
 
 # Рассчитываем возможный арбитражный спред с учетом комиссии
@@ -20,7 +20,7 @@ def calculate_arbitrage(binance_price, kraken_price):
         print(
             f"Возможен арбитраж: купите на {'Binance' if buy_price == binance_price else 'Kraken'}, продайте на {'Kraken' if sell_price == kraken_price else 'Binance'}")
     else:
-        print("Арбитраж невозможен")
+        print("Арбитраж Nевозможен")
 
 
 # Пример расчета

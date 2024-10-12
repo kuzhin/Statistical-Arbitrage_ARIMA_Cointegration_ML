@@ -3,10 +3,10 @@ import ccxt
 import requests
 
 # Инициализация бирж
-bybit = ccxt.bybit()
+byb2 = ccxt.bybit()
 
 # Получение инфы об активе на бирже
-bybit_ticker = bybit.fetch_ticker('FTT/USDT') # dict
+bybit_ticker = byb2.fetch_ticker('FTT/USDT') # dict
 
 """
 {'symbol': 'BTC/USDT', 'timestamp': None, 'datetime': None, 'high': 62316.0, 'low': 58941.85,
@@ -37,7 +37,7 @@ def get_bybit_order_book(cex_api_url, symbol):
     if response.status_code == 200:
         return response.json()
     else:
-        raise Exception("order bookr")
+        raise Exception("order error book")
 
 # Пример использования
 order_book = get_bybit_order_book('https://api.bybit.com', 'BTCUSDT')
