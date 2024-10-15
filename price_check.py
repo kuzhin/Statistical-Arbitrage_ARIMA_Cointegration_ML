@@ -10,7 +10,8 @@ def checksum_address(address):
 # Это swap router
 UNISWAP_V3_ROUTER_ADDRESS = "0xe592427a0aece92de3edee1f18e0157c05861564"  # Uniswap V3 router on Arbitrum
 
-# +Еще один для USDC Bridge
+# 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 с coingeko адресс usdc. Не понял. 2 разных адресса. +Еще один для USDC Bridge
+# 0xaf88d065e77c8cC2239327C5EDb3A432268e5831
 usdc = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
 weth = "0x82af49447d8a07e3bd95bd0d56f35241523fbab1"  # WETH on Arbitrum
 arb = "0x912ce59144191c1204e64559fe8253a0e49e6548"   # Arbitrum token on Arbitrum
