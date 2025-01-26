@@ -1,0 +1,7 @@
+        Бэктестинг
+Особенности для DEX:
+    Учет реальной ликвидности
+    Моделирование MEV-атак
+Метрики:
+```def sharpe_ratio(log_returns: pd.Series):
+    return np.sqrt(365) * log_returns.mean() / log_returns.std()```
