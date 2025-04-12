@@ -1,103 +1,88 @@
-import requests
+"""
+Базовый скрипт для наполнения TimescaleDB данными с Bybit (упрощенная версия)
+Требования: psycopg2, requests, python-dotenv
+"""
+
 import os
-import time
+import requests
+import psycopg2
+from datetime import datetime
 from dotenv import load_dotenv
 
-# Загружаем переменные окружения из файла .env
+# 1. Загрузка конфигурации
 load_dotenv()
+DB_CONFIG = {
+    'dbname': os.getenv('DB_NAME'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'host': os.getenv('DB_HOST')
+}
 
+BYBIT_API_URL = "https://api.bybit.com/v5/market/tickers"
+SYMBOL_FILTER = "BTCUSDT,ETHUSDT"
 
-class HyperliquidAPI:
-    def __init__(self):
-        self.base_url = "https://api.hyperliquid.xyz"  # Проверьте актуальность URL в документации
-        self.api_key = os.getenv("HYPERLIQUID_API_KEY")
-        self.headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}"
-        }
+# 2. Функция для получения данных с Bybit (исправлено)
+def fetch_bybit_data():
+    params = {'category': 'spot', 'symbol': SYMBOL_FILTER}
+    try:
+        response = requests.get(BYBIT_API_URL, params=params)
+        response.raise_for_status()
+        return response.json()['result']['list']
+    except Exception as e:
+        print(f"Ошибка получения данных: {str(e)}")
+        return []
 
-    def get_market_data(self, symbol=None):
-        """
-        Получение рыночных данных по конкретному символу или всех токенов
-        """
-        endpoint = "/info"  # Уточните правильный эндпоинт в документации
-        url = self.base_url + endpoint
+# 3. Работа с таблицей tokens (базовая версия)
+def get_or_create_token(conn, symbol, exchange):
+    with conn.cursor() as cursor:
+        # Условные метаданные
+        blockchain = 'Bitcoin' if symbol == 'BTC' else 'Ethereum'
+        contract_address = None
 
-        params = {}
-        if symbol:
-            params['symbol'] = symbol
+        cursor.execute("""
+            INSERT INTO tokens (symbol, exchange, blockchain, contract_address)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (symbol, exchange) DO UPDATE SET
+                blockchain = EXCLUDED.blockchain,
+                contract_address = EXCLUDED.contract_address
+            RETURNING token_id
+        """, (symbol, exchange, blockchain, contract_address))
 
-        try:
-            response = requests.get(
-                url,
-                headers=self.headers,
-                params=params,
-                timeout=5
-            )
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            print(f"Ошибка запроса: {e}")
-            return None
+        return cursor.fetchone()[0]
 
-    def get_order_book(self, symbol):
-        """
-        Пример получения стакана для конкретного токена
-        """
-        endpoint = "/orderbook"  # Уточните эндпоинт
-        url = self.base_url + endpoint
+# 4. Вставка данных в price_history (исправлено)
+def insert_price_data(conn, token_id, price, timestamp):
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            INSERT INTO price_history (token_id, price, timestamp)
+            VALUES (%s, %s, %s)
+            ON CONFLICT DO NOTHING
+        """, (token_id, price, timestamp))
 
-        try:
-            response = requests.get(
-                url,
-                headers=self.headers,
-                params={'symbol': symbol},
-                timeout=5
-            )
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            print(f"Ошибка получения стакана: {e}")
-            return None
+# 5. Основной процесс
+def main():
+    conn = psycopg2.connect(**DB_CONFIG)
 
-    def get_account_info(self):
-        """
-        Получение информации об аккаунте (требует аутентификации)
-        """
-        endpoint = "/account"  # Уточните эндпоинт
-        url = self.base_url + endpoint
+    for ticker in fetch_bybit_data():
+        symbol = ticker['symbol'].replace('USDT', '')  # Базовая обработка символа
 
         try:
-            response = requests.get(
-                url,
-                headers=self.headers,
-                timeout=5
+            # Получение/создание токена
+            token_id = get_or_create_token(conn, symbol=symbol, exchange='Bybit')
+
+            # Вставка цены
+            insert_price_data(
+                conn,
+                token_id=token_id,
+                price=float(ticker['lastPrice']),
+                timestamp=datetime.utcnow()  # Используем UTC время
             )
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            print(f"Ошибка получения данных аккаунта: {e}")
-            return None
+        except KeyError as e:
+            print(f"Ошибка в структуре данных: {str(e)}")
+            continue
 
+    conn.commit()
+    conn.close()
 
-# Пример использования
 if __name__ == "__main__":
-    api = HyperliquidAPI()
-
-    # Получаем данные по рынку
-    market_data = api.get_market_data("BTC")
-    if market_data:
-        print("Рыночные данные:")
-        print(market_data)
-
-    # Получаем стакан
-    order_book = api.get_order_book("BTC")
-    if order_book:
-        print("\nСтакан:")
-        print(order_book)
-
-    # Получаем информацию об аккаунте
-    account_info = api.get_account_info()
-    if account_info:
-        print("\nИнформация об аккаунте:")
-        print(account_info)
+    main()
