@@ -1,10 +1,10 @@
 import os
 import psycopg2
-from datetime import datetime, timedelta
 import time
 from tqdm import tqdm
 import ccxt
 from dotenv import load_dotenv
+from datetime import datetime, timedelta, timezone
 
 # Загрузка конфигурации из .env файла
 load_dotenv()
@@ -18,14 +18,11 @@ DB_CONFIG = {
     'port': os.getenv('DB_PORT', '5432')
 }
 
-# Ключи API Bybit
-BYBIT_API_KEY = os.getenv('BYBIT_API_KEY')
-BYBIT_SECRET = os.getenv('BYBIT_SECRET')
-
-# Список криптовалютных пар
-list_top_10 = ['BTC', 'ETH', 'SOL', 'TRX', 'MNT', 'DOGE', 'TON', 'SUI', 'ADA', 'AVAX']
+# Список криптовалютных пар (в формате Bybit: BTCUSDT)
+list_top_10 = ['TRX', 'MNT',
+               'DOGE', 'TON', 'SUI', 'ADA', 'AVAX']#'BTC', 'ETH', 'SOL',
 start_date = datetime(2021, 8, 1)
-BATCH_SIZE = 1000  # Максимальное количество свечей за запрос
+BATCH_SIZE = 1000  # Уменьшенный размер батча для надежности
 
 
 def init_db_connection():
@@ -40,22 +37,44 @@ def init_db_connection():
 
 def init_bybit_client():
     """Инициализация клиента Bybit через CCXT"""
-    exchange = ccxt.bybit({
-        'apiKey': BYBIT_API_KEY,
-        'secret': BYBIT_SECRET,
+    return ccxt.bybit({
+        'enableRateLimit': True,
         'options': {
-            'defaultType': 'spot',  # или 'future' для фьючерсов
+            'defaultType': 'spot',
+            'adjustForTimeDifference': True,
         },
-        'recvWindow': 100000,  # Увеличиваем recv_window
     })
-    return exchange
 
 
+def ensure_tables_exist(conn):
+    """Проверка существования таблиц"""
+    with conn.cursor() as cursor:
+        # Список таблиц для проверки
+        tables_to_check = ['tokens', 'price_history']
+        missing_tables = []
+
+        for table_name in tables_to_check:
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = %s
+                );
+            """, (table_name,))
+            exists = cursor.fetchone()[0]
+            if not exists:
+                missing_tables.append(table_name)
+
+        if missing_tables:
+            print(f"Отсутствуют таблицы: {', '.join(missing_tables)}")
+        else:
+            print("Все необходимые таблицы существуют.")
 
 def ensure_tokens_exist(conn):
     """Проверка существования токенов в базе"""
     with conn.cursor() as cursor:
-        for symbol in list_top_10:
+        for pair in list_top_10:
+            # Извлекаем символ из пары (первые 3-4 символа до USDT)
+            symbol = pair.replace('USDT', '')
             cursor.execute("""
                 INSERT INTO tokens (symbol) 
                 VALUES (%s)
@@ -70,12 +89,14 @@ def load_pair_data(conn, client, symbol):
     current_start = start_date
     end_reached = False
 
-    with tqdm(desc=f"Загрузка {pair}", unit="batch") as pbar:
+    start_time = time.time()
+
+    with tqdm(desc=f"Загрузка {pair} ({current_start.strftime('%Y-%m-%d')})", unit="batch") as pbar:
         while not end_reached:
             try:
                 # Получение данных с Bybit
                 data = client.fetch_ohlcv(
-                    symbol=pair,
+                    symbol=f"{symbol}USDT",  # Формат Bybit: BTCUSDT
                     timeframe='1m',
                     since=int(current_start.timestamp() * 1000),
                     limit=BATCH_SIZE
@@ -90,7 +111,7 @@ def load_pair_data(conn, client, symbol):
                 for d in data:
                     batch.append((
                         pair,
-                        datetime.utcfromtimestamp(d[0] / 1000),
+                        datetime.fromtimestamp(d[0] / 1000, tz=timezone.utc),  # Исправлено
                         float(d[1]),  # open
                         float(d[2]),  # high
                         float(d[3]),  # low
@@ -112,17 +133,24 @@ def load_pair_data(conn, client, symbol):
                 if len(data) < BATCH_SIZE:
                     end_reached = True
                 else:
-                    current_start = datetime.utcfromtimestamp(data[-1][0] / 1000) + timedelta(minutes=1)
+                    current_start = datetime.fromtimestamp(data[-1][0] / 1000, tz=timezone.utc) + timedelta(minutes=1)  # Исправлено
 
+                # Обновление описания прогресс-бара
+                pbar.set_description(f"Загрузка {pair} ({current_start.strftime('%Y-%m-%d')})")
                 pbar.update(1)
-                time.sleep(client.rateLimit / 1000)  # Соблюдение rate limit
+
+                time.sleep(client.rateLimit / 1000)  # Увеличиваем задержку
 
             except ccxt.NetworkError as e:
                 print(f"Сетевая ошибка для {pair}: {e}")
             except ccxt.ExchangeError as e:
                 print(f"Ошибка биржи для {pair}: {e}")
+                print("Подробности:", str(e))
             except Exception as e:
                 print(f"Неожиданная ошибка для {pair}: {e}")
+    end_time = time.time()
+    total_time = end_time - start_time
+    print(f"\nЗагрузка данных для {pair} завершена за {total_time/60:.2f} минут.")
 
 
 def main():
@@ -131,12 +159,15 @@ def main():
     conn = init_db_connection()
     client = init_bybit_client()
 
+    print("Проверка таблиц...")
+    ensure_tables_exist(conn)
+
     print("Проверка токенов в БД...")
     ensure_tokens_exist(conn)
 
     print("Начало загрузки данных...")
-    for symbol in list_top_10:
-        load_pair_data(conn, client, symbol)
+    for pair in list_top_10:
+        load_pair_data(conn, client, pair)
 
     conn.close()
     print("Загрузка завершена!")
