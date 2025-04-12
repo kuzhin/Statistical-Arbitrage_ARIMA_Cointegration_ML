@@ -1,0 +1,39 @@
+Отслеживание работы системы в реальном времени.
+
+Ключевые метрики для мониторинга:
+    Скорость исполнения ордеров (мс)
+    Процент успешных сделок
+    Максимальная просадка (Max Drawdown)
+    Соотношение Шарпа
+    Среднее проскальзывание
+
+Типичные файлы:
+
+        performance_tracker.py — Расчет метрик
+class PerformanceMonitor:
+    def __init__(self):
+        self.equity_curve = []
+    def update(self, pnl: float):
+        self.equity_curve.append(pnl)
+
+    def sharpe_ratio(self):
+        returns = pd.Series(self.equity_curve).pct_change()
+        return np.sqrt(365) * returns.mean() / returns.std()
+
+        alert_system.py — Система оповещений
+class AlertSystem:
+    def check_anomalies(self, data):
+        # Использование Isolation Forest для обнаружения аномалий
+        model = IsolationForest(contamination=0.01)
+        anomalies = model.fit_predict(data)
+        if -1 in anomalies:
+            self.send_alert("Обнаружены аномальные данные!")
+    def send_alert(self, message):
+        # Интеграция с Telegram/Slack
+        print(f"[ALERT] {message}")
+
+        dashboard.py — Визуализация (пример с Plotly)
+def live_dashboard(data):
+    fig = px.line(data, x='timestamp', y='equity', title='Кривая капитала')
+    fig.add_hline(y=0, line_dash="dash", line_color="red")
+    fig.show()
