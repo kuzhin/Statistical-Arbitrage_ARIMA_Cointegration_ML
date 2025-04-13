@@ -1,8 +1,9 @@
 import os
 import psycopg2
 import time
-from tqdm import tqdm
 import ccxt
+
+from tqdm import tqdm
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
 
@@ -19,10 +20,12 @@ DB_CONFIG = {
 }
 
 # Список криптовалютных пар (в формате Bybit: BTCUSDT)
-list_top_10 = ['TRX', 'MNT',
-               'DOGE', 'TON', 'SUI', 'ADA', 'AVAX']#'BTC', 'ETH', 'SOL',
-start_date = datetime(2021, 8, 1)
-BATCH_SIZE = 1000  # Уменьшенный размер батча для надежности
+list_top_10 = ['XLM', 'XRP']  # 'BTC', 'ETH', 'SOL','TRX', 'MNT',
+               #'DOGE', 'TON', 'SUI', 'ADA', 'AVAX'
+
+start_date = datetime(2023,8,1)
+start_date_for_data_update = datetime(2025,4,10)
+BATCH_SIZE = 1000  # Максимально разрешенный батч сайз
 
 
 def init_db_connection():
@@ -111,7 +114,7 @@ def load_pair_data(conn, client, symbol):
                 for d in data:
                     batch.append((
                         pair,
-                        datetime.fromtimestamp(d[0] / 1000, tz=timezone.utc),  # Исправлено
+                        datetime.fromtimestamp(d[0] / 1000, tz=timezone.utc),
                         float(d[1]),  # open
                         float(d[2]),  # high
                         float(d[3]),  # low
