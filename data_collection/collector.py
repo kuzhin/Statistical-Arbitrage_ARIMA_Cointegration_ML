@@ -89,11 +89,36 @@ def update_data(pair, timeframe, since_days, force_update=False):
 
 
 def get_all_pairs(timeframe, since_days, force_update=False):
-    """Получает данные для всех пар"""
-    return {
-        pair: update_data(pair, timeframe=timeframe, since_days=since_days)
-        for pair in PAIRS
-    }
+    """
+    Получает данные для всех пар с контролем обновления
+
+    Параметры:
+        timeframe: таймфрейм данных (например, '5m', '1h')
+        since_days: за сколько дней загружать данные (если force_update=True)
+        force_update: принудительно обновить данные (по умолчанию False)
+
+    Возвращает:
+        Словарь {пара: DataFrame} только с успешно загруженными данными
+    """
+    result = {}
+    failed_pairs = []
+
+    for pair in PAIRS:
+        try:
+            df = update_data(pair, timeframe, since_days, force_update)
+            if not df.empty:
+                result[pair] = df
+            else:
+                failed_pairs.append(pair)
+        except Exception as e:
+            print(f"Ошибка загрузки {pair}: {str(e)}")
+            failed_pairs.append(pair)
+
+    if failed_pairs:
+        print(f"\nНе удалось загрузить: {', '.join(failed_pairs)}")
+
+    print(f"\nУспешно загружено {len(result)}/{len(PAIRS)} пар")
+    return result
 
 
 # if __name__ == "__main__":
