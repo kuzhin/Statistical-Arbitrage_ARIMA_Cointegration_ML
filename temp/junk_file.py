@@ -24,7 +24,7 @@ def one():
 
 
     try:
-        balance = session.get_wallet_balance(accountType="UNIFIED")  # <-- Typo here! Should be "UNIFIED"
+        balance = session.get_wallet_balance(accountType="UNIFIED")
         print("Balance:", balance)
     except Exception as e:
         print("Error:", e)
