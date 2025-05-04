@@ -3,19 +3,27 @@ import json
 
 # Store price histry for all available pairs
 def store_price_history(symbols):
+    """
+    Получает исторические данные цен для списка токенов и сохраняет в JSON
+
+    Args:
+        symbols: Множество базовых токенов (в формате: {'BTC', 'ETH', 'SOL', ...})
+    """
+    # Преобразуем токены в торговые пары (добавляем USDT)
+    trading_pairs = [f"{token}USDT" for token in symbols]
 
     # Get prices and store in DataFrame
     counts = 0
     price_history_dict = {}
-    for sym in symbols:
-        symbol_name = sym["name"]
-        price_history = get_price_klines(symbol_name)
+    for pair in trading_pairs:
+        price_history = get_price_klines(pair)  # Используем готовую функцию get_price_klines
+
         if len(price_history) > 0:
-            price_history_dict[symbol_name] = price_history
+            price_history_dict[pair] = price_history
             counts += 1
-            print(f"{counts} items stored")
+            print(f"{counts} {pair} stored")
         else:
-            print(f"{counts} items not stored")
+            print(f"{pair} not stored")
 
     # Output prices to JSON
     if len(price_history_dict) > 0:

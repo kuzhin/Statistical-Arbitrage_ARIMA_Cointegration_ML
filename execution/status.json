@@ -1,9 +1,9 @@
 {
-    "message": "Closing existing trades...",
+    "message": "Initial checks made...",
     "checks": [
         true,
-        false,
-        false,
-        false
+        true,
+        true,
+        true
     ]
 }

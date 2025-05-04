@@ -1,4 +1,3 @@
-import requests
 from config_strategy_api import session
 
 # Get symbols that are tradeable
@@ -18,36 +17,58 @@ from config_strategy_api import session
 #     # Return ouput
 #     return sym_list
 
-def get_tradeable_symbols():
+def get_tradeable_symbols(include_spot=False, include_linear=True, max_tokens=5):
     """
+    Получает список торговых токенов с возможностью ограничения количества
 
-    Return: Список всех токенов ( set{'LISTA', 'CFX'} )
+    Параметры:
+        include_spot (bool): Включать спотовые токены (по умолчанию False)
+        include_linear (bool): Включать линейные фьючерсы (по умолчанию True)
+        max_tokens (int|None): Максимальное количество возвращаемых токенов (None - без ограничений)
+
+    Возвращает:
+        set: Множество уникальных базовых токенов (например {'BTC', 'ETH', 'SOL'})
     """
+    all_coins = set()
 
-    # 1. Получаем все спотовые пары (там полный список базовых токенов)
-    # Спот пары:
-    spot_url = "https://api.bybit.com/v5/market/instruments-info?category=spot"
-    # spot_data = requests.get(spot_url).json()
-    # spot_base_coins = list({item["baseCoin"] for item in spot_data["result"]["list"]})
+    try:
+        # 1. Получаем спотовые токены
+        if include_spot:
+            spot_response = session.get_instruments_info(category="spot")
+            if spot_response['retCode'] == 0:
+                for item in spot_response['result']['list']:
+                    if max_tokens and len(all_coins) >= max_tokens:
+                        break
+                    all_coins.add(item['baseCoin'])
 
-    # 2. Получаем фьючерсы (inverse + linear) с пагинацией
-    futures_coins = set()
+        # 2. Получаем линейные фьючерсы
+        if include_linear and (max_tokens is None or len(all_coins) < max_tokens):
+            cursor = None
+            while True:
+                params = {
+                    "category": "linear",
+                    "limit": 1000
+                }
+                if cursor:
+                    params["cursor"] = cursor
 
-    for category in ["linear"]: # , "inverse" - предполагаю, что инверс не нужны (усложнение какое-то)
-        cursor = None
-        while True:
-            url = f"https://api.bybit.com/v5/market/instruments-info?category={category}&limit=1000"
-            if cursor:
-                url += f"&cursor={cursor}"
+                linear_response = session.get_instruments_info(**params)
+                if linear_response['retCode'] != 0:
+                    break
 
-            data = requests.get(url).json()
-            if data["retCode"] != 0:
-                break
+                for item in linear_response['result']['list']:
+                    if max_tokens and len(all_coins) >= max_tokens:
+                        break
+                    all_coins.add(item['baseCoin'])
 
-            futures_coins.update({item["baseCoin"] for item in data["result"]["list"]})
-            cursor = data["result"].get("nextPageCursor")
-            if not cursor:
-                break
+                if max_tokens and len(all_coins) >= max_tokens:
+                    break
 
-    # Объединяем спот и фьючерсы, убираем дубли
-    return list(futures_coins)
+                cursor = linear_response['result'].get('nextPageCursor')
+                if not cursor:
+                    break
+
+    except Exception as e:
+        print(f"Ошибка при запросе символов: {e}")
+
+    return all_coins
