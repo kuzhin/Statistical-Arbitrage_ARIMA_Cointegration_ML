@@ -60,7 +60,7 @@ def get_cointegrated_pairs(prices):
                 sorted_characters = sorted(sym_1 + sym_2)
                 unique = "".join(sorted_characters)
                 if unique in included_list:
-                    break
+                    pass
 
                 # Get close prices
                 series_1 = extract_close_prices(prices[sym_1])
