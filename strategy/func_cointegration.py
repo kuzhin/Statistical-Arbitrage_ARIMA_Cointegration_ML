@@ -38,10 +38,11 @@ def calculate_cointegration(series_1, series_2):
 # Put close prices into a list
 def extract_close_prices(prices):
     close_prices = []
-    for price_values in prices:
-        if math.isnan(price_values["close"]):
-            return []
-        close_prices.append(price_values["close"])
+    for candle in prices:
+        # Цена закрытия находится под индексом 4
+        close_price = candle[4]
+        # Преобразуем строку в float
+        close_prices.append(float(close_price))
     return close_prices
 
 # Calculate cointegrated pairs
@@ -60,7 +61,7 @@ def get_cointegrated_pairs(prices):
                 sorted_characters = sorted(sym_1 + sym_2)
                 unique = "".join(sorted_characters)
                 if unique in included_list:
-                    pass
+                    break
 
                 # Get close prices
                 series_1 = extract_close_prices(prices[sym_1])
