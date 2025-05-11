@@ -17,7 +17,7 @@ from config_strategy_api import session
 #     # Return ouput
 #     return sym_list
 
-def get_tradeable_symbols(include_spot=False, include_linear=True, max_tokens=5):
+def get_tradeable_symbols(include_spot, include_linear, max_tokens):
     """
     Получает список торговых токенов с возможностью ограничения количества
 

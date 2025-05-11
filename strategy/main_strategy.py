@@ -14,7 +14,9 @@ if __name__ == "__main__":
 
     # STEP 1 - Get list of symbols
     print("Getting symbols...")
-    sym_response = get_tradeable_symbols()
+    # TODO: проблема, до этого было 5 токенов для загрузки, для теста выбрал 50 и все равно загружается 5. 1_price_list - можно посмотреть сохраненные токены
+    # вроде все работает, надо проверить
+    sym_response = get_tradeable_symbols(include_spot=False, include_linear=True, max_tokens=50)
 
     # STEP 2 - Construct and save price history
     print("Constructing and saving price data to JSON...")
