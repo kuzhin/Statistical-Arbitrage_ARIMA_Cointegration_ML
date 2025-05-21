@@ -14,12 +14,15 @@ if __name__ == "__main__":
 
     # STEP 1 - Get list of symbols
     print("Getting symbols...")
-    sym_response = get_tradeable_symbols()
+
+    pass
+    # sym_response = get_tradeable_symbols(include_spot=False, include_linear=True, max_tokens=None)
 
     # STEP 2 - Construct and save price history
-    print("Constructing and saving price data to JSON...")
-    if len(sym_response) > 0:
-        store_price_history(sym_response)
+    # print("Constructing and saving price data to JSON...")
+    # if len(sym_response) > 0:
+    #     store_price_history(sym_response)
+    pass
 
     # STEP 3 - Find Cointegrated pairs
     print("Calculating co-integration...")
@@ -30,8 +33,8 @@ if __name__ == "__main__":
 
     # STEP 4 - Plot trends and save for backtesting
     print("Plotting trends...")
-    symbol_1 = "MATICUSDT"
-    symbol_2 = "STXUSDT"
+    symbol_1 = '1000000PEIPEIUSDT'#"MATICUSDT"
+    symbol_2 = '1000000MOGUSDT'#"STXUSDT"
     with open("1_price_list.json") as json_file:
         price_data = json.load(json_file)
         if len(price_data) > 0:
