@@ -4,7 +4,11 @@
 """
 
 # API Imports
-from pybit import usdt_perpetual
+from pybit.unified_trading import HTTP
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # CONFIG
 mode = "test"
@@ -17,8 +21,8 @@ api_key_mainnet = ""
 api_secret_mainnet = ""
 
 # TEST API
-api_key_testnet = "m1SGFz4iwLbmIi9VZX"
-api_secret_testnet = "JkoEAojdvRMuUQNVa2Bhn2GhIVtOePRPseO6"
+api_key_testnet = os.getenv('api_key')
+api_secret_testnet = os.getenv('api_secret')
 
 # SELECTED API
 api_key = api_key_testnet if mode == "test" else api_key_mainnet
@@ -28,8 +32,14 @@ api_secret = api_secret_testnet if mode == "test" else api_secret_mainnet
 api_url = "https://api-testnet.bybit.com" if mode == "test" else "https://api.bybit.com"
 
 # SESSION Activation
-session = usdt_perpetual.HTTP(
-    endpoint=api_url,
+
+session = HTTP(
     api_key=api_key,
-    api_secret=api_secret
+    api_secret=api_secret,
+    demo=True
 )
+# session = HTTP(
+#     endpoint=api_url,
+#     api_key=api_key,
+#     api_secret=api_secret
+# )
