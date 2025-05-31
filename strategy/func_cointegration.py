@@ -23,17 +23,20 @@ def calculate_spread(series_1, series_2, hedge_ratio):
 # Calculate co-integration
 def calculate_cointegration(series_1, series_2):
     coint_flag = 0
-    coint_res = coint(series_1, series_2)
-    coint_t = coint_res[0]
-    p_value = coint_res[1]
-    critical_value = coint_res[2][1]
+    t_value, p_value, critical_value = coint(series_1, series_2)
+    # coint_res = coint(series_1, series_2)
+    # t_value = coint_res[0]
+    # p_value = coint_res[1]
+    # пороговые значения t-статистики: 1% (очень строгий); 5% (стандартный); 10% (мягкий)
+    # critical_value = coint_res[2][1]
     model = sm.OLS(series_1, series_2).fit()
     hedge_ratio = model.params[0]
     spread = calculate_spread(series_1, series_2, hedge_ratio)
     zero_crossings = len(np.where(np.diff(np.sign(spread)))[0])
-    if p_value < 0.5 and coint_t < critical_value:
+    if p_value < 0.5 and t_value < critical_value[2]:
         coint_flag = 1
-    return (coint_flag, round(p_value, 2), round(coint_t, 2), round(critical_value, 2), round(hedge_ratio, 2), zero_crossings)
+    return (coint_flag, round(p_value, 2), round(t_value, 2), round(critical_value[2], 2), round(hedge_ratio, 2), zero_crossings)
+
 
 # Put close prices into a list
 def extract_close_prices(prices):
@@ -62,13 +65,17 @@ def get_cointegrated_pairs(prices):
                 unique = "".join(sorted_characters)
                 if unique in included_list:
                     break
-
                 # Get close prices
                 series_1 = extract_close_prices(prices[sym_1])
                 series_2 = extract_close_prices(prices[sym_2])
 
+                # Проверка, есть много пар, с разными размерами списков
+                if len(series_1) != len(series_2):
+                    continue
+
                 # Check for cointegration and add cointegrated pair
                 coint_flag, p_value, t_value, c_value, hedge_ratio, zero_crossings = calculate_cointegration(series_1, series_2)
+
                 if coint_flag == 1:
                     included_list.append(unique)
                     coint_pair_list.append({

@@ -16,9 +16,11 @@ if __name__ == "__main__":
     print("Getting symbols...")
 
     pass
-    # sym_response = get_tradeable_symbols(include_spot=False, include_linear=True, max_tokens=None)
+    # Уже загружено 516 монет.
 
-    # STEP 2 - Construct and save price history
+    # sym_response = get_tradeable_symbols(include_spot=False, include_linear=True, max_tokens=10)
+    #
+    # # STEP 2 - Construct and save price history
     # print("Constructing and saving price data to JSON...")
     # if len(sym_response) > 0:
     #     store_price_history(sym_response)
@@ -31,11 +33,11 @@ if __name__ == "__main__":
         if len(price_data) > 0:
             coint_pairs = get_cointegrated_pairs(price_data)
 
-    # STEP 4 - Plot trends and save for backtesting
-    print("Plotting trends...")
-    symbol_1 = '1000000PEIPEIUSDT'#"MATICUSDT"
-    symbol_2 = '1000000MOGUSDT'#"STXUSDT"
-    with open("1_price_list.json") as json_file:
-        price_data = json.load(json_file)
-        if len(price_data) > 0:
-            plot_trends(symbol_1, symbol_2, price_data)
+    # # STEP 4 - Plot trends and save for backtesting
+    # print("Plotting trends...")
+    # symbol_1 = '1000000PEIPEIUSDT'#"MATICUSDT"
+    # symbol_2 = '1000000MOGUSDT'#"STXUSDT"
+    # with open("1_price_list.json") as json_file:
+    #     price_data = json.load(json_file)
+    #     if len(price_data) > 0:
+    #         plot_trends(symbol_1, symbol_2, price_data)
