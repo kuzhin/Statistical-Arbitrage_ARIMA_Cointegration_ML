@@ -1,5 +1,5 @@
 from analysis.cointegration import run_cointegration_analysis # 19.05.2025
-#hello it's 19.05.2025 11:58 msk
+
 
 if __name__ == "__main__":
     # Запуск анализа с параметрами:
