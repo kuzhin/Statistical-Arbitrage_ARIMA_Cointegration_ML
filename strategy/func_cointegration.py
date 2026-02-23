@@ -22,6 +22,15 @@ def calculate_spread(series_1, series_2, hedge_ratio):
 
 # Calculate co-integration
 def calculate_cointegration(series_1, series_2):
+    """
+    Расчет коинтеграции
+    Args:
+        series_1: серия для монеты, например, BTC
+        series_2: серия для монеты, например, ETH
+
+    Returns:
+
+    """
     coint_flag = 0
     t_value, p_value, critical_value = coint(series_1, series_2)
     # coint_res = coint(series_1, series_2)
