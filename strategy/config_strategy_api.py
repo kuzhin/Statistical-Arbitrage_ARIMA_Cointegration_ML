@@ -1,6 +1,6 @@
 """
     API Documentation
-    https://bybit-exchange.github.io/docs/linear/#t-introduction
+    https://bybit-exchange.github.io/docs/v5/intro
 """
 
 # API Imports

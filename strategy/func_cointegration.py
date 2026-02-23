@@ -72,7 +72,7 @@ def get_cointegrated_pairs(prices):
                 # Проверка, есть много пар, с разными размерами списков
                 if len(series_1) != len(series_2):
                     continue
-
+# бред какой-то с цифрами. Слишком маленький p_value
                 # Check for cointegration and add cointegrated pair
                 coint_flag, p_value, t_value, c_value, hedge_ratio, zero_crossings = calculate_cointegration(series_1, series_2)
 
