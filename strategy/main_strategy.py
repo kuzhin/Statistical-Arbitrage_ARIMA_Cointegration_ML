@@ -16,9 +16,9 @@ if __name__ == "__main__":
     print("Getting symbols...")
 
     pass
-    # # Уже загружено 516 монет.
-    #
-    # sym_response = get_tradeable_symbols(include_spot=False, include_linear=True, max_tokens=10)
+    # Уже загружено 516 монет.
+
+    # sym_response = get_tradeable_symbols(include_spot=False, include_linear=True, max_tokens=50)
     #
     # # STEP 2 - Construct and save price history
     # print("Constructing and saving price data to JSON...")
