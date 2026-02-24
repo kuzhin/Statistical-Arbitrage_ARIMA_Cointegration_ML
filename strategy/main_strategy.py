@@ -18,12 +18,12 @@ if __name__ == "__main__":
     pass
     # Уже загружено 516 монет.
 
-    # sym_response = get_tradeable_symbols(include_spot=False, include_linear=True, max_tokens=10)
-    #
-    # # STEP 2 - Construct and save price history
-    # print("Constructing and saving price data to JSON...")
-    # if len(sym_response) > 0:
-    #     store_price_history(sym_response)
+    sym_response = get_tradeable_symbols(include_spot=False, include_linear=True, max_tokens=10)
+
+    # STEP 2 - Construct and save price history
+    print("Constructing and saving price data to JSON...")
+    if len(sym_response) > 0:
+        store_price_history(sym_response)
     pass
 
     # STEP 3 - Find Cointegrated pairs
