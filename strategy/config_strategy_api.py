@@ -32,7 +32,6 @@ api_secret = api_secret_testnet if mode == "test" else api_secret_mainnet
 api_url = "https://api-testnet.bybit.com" if mode == "test" else "https://api.bybit.com"
 
 # SESSION Activation
-
 session = HTTP(
     api_key=api_key,
     api_secret=api_secret,
