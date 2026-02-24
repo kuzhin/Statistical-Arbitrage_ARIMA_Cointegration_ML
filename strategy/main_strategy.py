@@ -24,6 +24,7 @@ if __name__ == "__main__":
     print("Constructing and saving price data to JSON...")
     if len(sym_response) > 0:
         store_price_history(sym_response)
+
     pass
 
     # STEP 3 - Find Cointegrated pairs
