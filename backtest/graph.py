@@ -1,4 +1,5 @@
-
+import json
+from func_plot_trends import plot_trends
 
 # TODO:Граф должен был быть вы strategy.main_strategy
 #  разобраться, как сделать тут.
