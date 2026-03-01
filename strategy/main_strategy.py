@@ -6,7 +6,8 @@ from func_cointegration import get_cointegrated_pairs
 import json
 
 from func_price_klines import get_price_klines
-# Store price histry for all available pairs
+
+# Store price history for all available pairs
 
 def store_price_history(symbols):
     """
